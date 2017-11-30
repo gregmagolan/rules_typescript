@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/bazelbuild/rules_typescript/internal/concatjs/concatjs"
@@ -32,7 +34,26 @@ func main() {
 		os.Exit(1)
 	}
 
-	http.Handle(*servingPath, concatjs.ServeConcatenatedJS(*manifest, *base, nil /* realFileSystem */))
+	scripts := []string{RequireJs, "", ""}
+
+	livereloadUrl := os.Getenv("IBAZEL_LIVERELOAD_URL")
+	re := regexp.MustCompile("^([a-zA-Z0-9]+)\\:\\/\\/([[a-zA-Z0-9\\.]+)\\:([0-9]+)")
+	match := re.FindStringSubmatch(livereloadUrl)
+	if match != nil && len(match) == 4 {
+		port, err := strconv.ParseUint(match[3], 10, 16)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Cannot determine livereload port from IBAZEL_LIVERELOAD_URL")
+		} else {
+			livereloadScheme := match[1]
+			livereloadHost := match[2]
+			livereloadPort := uint16(port)
+			fmt.Printf("Serving live reload script for port %d\n", livereloadPort)
+			scripts[1] = fmt.Sprintf("\nwindow.LiveReloadOptions = { https: \"%s\" === \"https\", host: \"%s\", port: %d };\n", livereloadScheme, livereloadHost, livereloadPort)
+			scripts[2] = LivereloadJs;
+		}
+	}
+
+	http.Handle(*servingPath, concatjs.ServeConcatenatedJS(*manifest, *base, scripts, nil /* realFileSystem */))
 	pkgList := strings.Split(*pkgs, ",")
 	http.HandleFunc("/", devserver.CreateFileHandler(*servingPath, *manifest, pkgList, *base))
 
