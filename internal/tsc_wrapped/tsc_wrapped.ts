@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as ts from 'typescript';
 
-import {PLUGIN as tsetsePlugin} from '../tsetse/runner';
+import {PLUGIN as tsetsePlugin} from './tsetse/runner';
 
 import {CompilerHost} from './compiler_host';
 import * as diagnostics from './diagnostics';
