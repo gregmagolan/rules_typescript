@@ -22,16 +22,16 @@ filegroup(
     ],
 )
 
-load("@io_bazel_rules_go//go:def.bzl", "go_binary")
+# load("@io_bazel_rules_go//go:def.bzl", "go_binary")
 
-go_binary(
-    name = "main",
-    srcs = ["main.go"],
-    visibility = ["//visibility:public"],
-    # See https://github.com/bazelbuild/rules_go/issues/721
-    importpath = "do_not_import",
-    deps = [
-        "//internal/concatjs",
-        "//internal/devserver",
-    ],
-)
+# go_binary(
+#     name = "main",
+#     srcs = ["main.go"],
+#     visibility = ["//visibility:public"],
+#     # See https://github.com/bazelbuild/rules_go/issues/721
+#     importpath = "do_not_import",
+#     deps = [
+#         "//internal/concatjs",
+#         "//internal/devserver",
+#     ],
+# )
