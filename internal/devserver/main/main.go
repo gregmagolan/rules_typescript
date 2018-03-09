@@ -73,7 +73,7 @@ func main() {
 	}
 
 	// Include all user scripts in preScripts. This should always include
-	// the requirejs script which is added to scriptFiles by the devserver
+	// the systemjs script which is added to scriptFiles by the devserver
 	// skylark rule.
 	for _, v := range scriptFiles {
 		js, err := loadScript(filepath.Join(*base, v))

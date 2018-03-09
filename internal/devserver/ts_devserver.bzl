@@ -50,7 +50,7 @@ def _ts_devserver(ctx):
   # in script_files before any user specified scripts for the devserver
   # to concat in order.
   script_files = depset()
-  script_files += ctx.files._requirejs_script
+  script_files += ctx.files._systemjs_script
   script_files += ctx.files.scripts
   ctx.actions.write(ctx.outputs.scripts_manifest, "".join([
     workspace_name + "/" + f.short_path + "\n" for f in script_files
@@ -60,7 +60,7 @@ def _ts_devserver(ctx):
     ctx.executable._devserver,
     ctx.outputs.manifest,
     ctx.outputs.scripts_manifest,
-    ctx.file._requirejs_script]
+    ctx.file._systemjs_script]
   devserver_runfiles += ctx.files.static_files
   devserver_runfiles += ctx.files.scripts
 
@@ -111,7 +111,7 @@ ts_devserver = rule(
         # The entry_module should be the AMD module name of the entry module such as "__main__/src/index"
         # Devserver concats the following snippet after the bundle to load the application: require(["entry_module"]);
         "entry_module": attr.string(),
-        "_requirejs_script": attr.label(allow_files = True, single_file = True, default = Label("@build_bazel_rules_typescript_devserver_deps//:node_modules/requirejs/require.js")),
+        "_systemjs_script": attr.label(allow_files = True, single_file = True, default = Label("@build_bazel_rules_typescript_devserver_deps//:node_modules/systemjs/dist/system.js")),
         "_devserver": attr.label(
             default = Label("//internal/devserver/main"),
             executable = True,
