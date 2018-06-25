@@ -112,6 +112,10 @@ def create_tsconfig(ctx, files, srcs,
       # maps the entire module root.
       mapped_module_roots["{}/*".format(name)] = ["%s%s/*" % (p, path)
                                                   for p in module_path_prefixes]
+      if path.startswith("external/"):
+        # If path is an external repository, also include a path glob without
+        # the external portion
+        mapped_module_roots["{}/*".format(name)] += ["%s/*" % path[9:]]
   for name, path in module_roots.items():
     mapped_module_roots[name] = path
 

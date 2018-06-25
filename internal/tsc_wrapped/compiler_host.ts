@@ -307,6 +307,7 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
     // named by code in that repository.
     // As a workaround, check for the /external/ path segment, and fix up the
     // workspace name to be the name of the external repository.
+    const originalFileName = fileName;
     if (fileName.startsWith('external/')) {
       const parts = fileName.split('/');
       workspace = parts[1];
@@ -329,6 +330,28 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
           return this.bazelOpts.moduleName;
         }
         return path.posix.join(this.bazelOpts.moduleName, relativeFileName);
+      }
+    }
+
+    // TODO(gmagolan): clean this up
+    if (this.options.paths) {
+      let result = null;
+      for (let key in this.options.paths) {
+          if (!this.options.paths.hasOwnProperty(key)) {
+              continue;
+          }
+          this.options.paths[key].forEach(value => {
+            if (value.endsWith('*')) {
+              const path = value.replace('*', '');
+              if (originalFileName.startsWith(path)) {
+                result = key.replace('*', '') + originalFileName.replace(path, '');
+                return;
+              }
+            }
+          });
+      }
+      if (result) {
+        return result;
       }
     }
 
