@@ -51,6 +51,12 @@ node_repositories(
   package_json = ["//:package.json"],
   preserve_symlinks = True)
 
+yarn_install(
+    name = "npm",
+    package_json = "//:package.json",
+    yarn_lock = "//:yarn.lock",
+    data = ["//tools:check_version.js"]
+)
 
 load("@io_bazel_rules_go//go:def.bzl", "go_rules_dependencies", "go_register_toolchains")
 

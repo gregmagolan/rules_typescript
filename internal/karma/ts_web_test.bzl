@@ -40,9 +40,9 @@ def _ts_web_test_impl(ctx):
     # The files in the bootstrap attribute come before the require.js support.
     # Note that due to frameworks = ['jasmine'], a few scripts will come before
     # the bootstrap entries:
-    # build_bazel_rules_typescript_karma_deps/node_modules/jasmine-core/lib/jasmine-core/jasmine.js
-    # build_bazel_rules_typescript_karma_deps/node_modules/karma-jasmine/lib/boot.js
-    # build_bazel_rules_typescript_karma_deps/node_modules/karma-jasmine/lib/adapter.js
+    # npm/node_modules/jasmine-core/lib/jasmine-core/jasmine.js
+    # npm/node_modules/karma-jasmine/lib/boot.js
+    # npm/node_modules/karma-jasmine/lib/adapter.js
     # This is desired so that the bootstrap entries can patch jasmine, as zone.js does.
     bootstrap_entries = [
         expand_path_into_runfiles(ctx, f.short_path)
@@ -63,8 +63,8 @@ def _ts_web_test_impl(ctx):
     # polyfilling before test libraries load.
     # See https://github.com/karma-runner/karma/issues/699
     bootstrap_entries += [
-        "build_bazel_rules_typescript_karma_deps/node_modules/requirejs/require.js",
-        "build_bazel_rules_typescript_karma_deps/node_modules/karma-requirejs/lib/adapter.js",
+        "npm/node_modules/requirejs/require.js",
+        "npm/node_modules/karma-requirejs/lib/adapter.js",
         "/".join([ctx.workspace_name, amd_names_shim.short_path]),
     ]
 

@@ -19,7 +19,9 @@
 # https://github.com/bazelbuild/rules_go/blob/master/go/tools/gazelle/README.rst#directives
 # gazelle:exclude node_modules
 load("@io_bazel_rules_go//go:def.bzl", "gazelle")
+load("@build_bazel_rules_nodejs//:defs.bzl", "npm_package")
 load("@build_bazel_rules_nodejs//internal/js_library:js_library.bzl", "js_library")
+load("//:package.bzl", "VERSION")
 
 # ts_library defaults to this label in the top-level package.
 # Point to where the file actually lives.
@@ -34,19 +36,26 @@ gazelle(
     prefix = "github.com/bazelbuild/rules_typescript",
 )
 
-# The node_modules directory is created by `yarn install`
-# WORKAROUND for https://github.com/bazelbuild/bazel/issues/374#issuecomment-296217940
 filegroup(
     name = "node_modules",
-    # Only include files needed for type-checking and runtime
-    srcs = glob([
-        "node_modules/**/*.js",
-        "node_modules/**/*.d.ts",
-        "node_modules/**/*.json",
-    ] + [
-        # Needed because http-server has a bin with no .js extension
-        "node_modules/http-server/**",
-    ]),
+    srcs = glob(
+        include = [
+          "node_modules/**/*.js",
+          "node_modules/**/*.d.ts",
+          "node_modules/**/*.json",
+          "node_modules/.bin/*",
+        ],
+        exclude = [
+          # Files under test & docs may contain file names that
+          # are not legal Bazel labels (e.g.,
+          # node_modules/ecstatic/test/public/中文/檔案.html)
+          "node_modules/**/test/**",
+          "node_modules/**/docs/**",
+          # Files with spaces in the name are not legal Bazel labels
+          "node_modules/**/* */**",
+          "node_modules/**/* *",
+        ],
+    ),
     visibility = ["//visibility:public"],
 )
 
@@ -65,4 +74,18 @@ js_library(
         "protobufjs/minimal": "protobuf",
     },
     visibility = ["//visibility:public"],
+)
+
+npm_package(
+    name = "npm_package",
+    srcs = [
+        "LICENSE",
+        "README.md",
+        "package.json",
+        "//tools:check_version.js",
+    ],
+    deps = [
+        "//internal:tsc_wrapped",
+        "//internal/karma:karma_concat_js",
+    ],
 )

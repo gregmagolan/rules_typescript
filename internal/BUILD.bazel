@@ -24,15 +24,18 @@ exports_files([
     "ts_repositories.bzl",
 ])
 
-load("//:defs.bzl", "ts_library")
+load("//internal:defaults.bzl", "ts_library")
 load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary", "jasmine_node_test")
 
 # Vanilla typescript compiler: run the tsc.js binary distributed by TypeScript
 nodejs_binary(
     name = "tsc",
     entry_point = "typescript/lib/tsc.js",
-    node_modules = "@//:node_modules",
     visibility = ["//internal:__subpackages__"],
+    data = [
+      "@npm//:source-map-support",
+      "@npm//:typescript",
+    ]
 )
 
 # Build our custom compiler using the vanilla one
@@ -70,10 +73,14 @@ ts_library(
 nodejs_binary(
     name = "tsc_wrapped_bin",
     data = [
+        "@npm//:protobufjs",
+        "@npm//:source-map-support",
+        "@npm//:tsickle",
+        "@npm//:tsutils",
+        "@npm//:typescript",
         ":tsc_wrapped",
     ],
     entry_point = "build_bazel_rules_typescript/internal/tsc_wrapped/tsc_wrapped.js",
-    node_modules = "@//:node_modules",
     templated_args = ["--node_options=--expose-gc"],
     visibility = ["//visibility:public"],
 )
@@ -88,6 +95,12 @@ ts_library(
 jasmine_node_test(
     name = "test",
     srcs = [],
-    deps = [":test_lib"],
-    node_modules = "//:node_modules",
+    deps = [
+      "@npm//:jasmine",
+      "@npm//:typescript",
+      "@npm//:which",
+      # @npm//:which this is needed as the 'exit' package doesn't
+      # specify its dependency on 'which' (it has it as a devDependency only)
+      ":test_lib",
+    ],
 )

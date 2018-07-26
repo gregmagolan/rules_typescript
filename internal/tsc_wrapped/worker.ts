@@ -25,7 +25,7 @@ export function runAsWorker(args: string[]) {
 }
 
 const workerpb = (function loadWorkerPb() {
-  const protoPath = 'build_bazel_rules_typescript/third_party/github.com/bazelbuild/bazel/src/main/protobuf/worker_protocol.proto';
+  const protoPath = '../../third_party/github.com/bazelbuild/bazel/src/main/protobuf/worker_protocol.proto';
 
   // Use node module resolution so we can find the .proto file in any of the root dirs
   const protofile = require.resolve(protoPath);

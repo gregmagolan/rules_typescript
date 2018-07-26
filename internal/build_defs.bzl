@@ -198,7 +198,8 @@ ts_library = rule(
             Sets a different TypeScript compiler binary to use for this library.
             For example, we use the vanilla TypeScript tsc.js for bootstrapping,
             and Angular compilations can replace this with `ngc`.""",
-            default = Label("//internal:tsc_wrapped_bin"),
+            default = Label("@npm//:@bazel/typescript/tsc_wrapped"),
+            single_file = False,
             allow_files = True,
             executable = True,
             cfg = "host",

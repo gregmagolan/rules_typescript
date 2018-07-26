@@ -12,25 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-package(default_visibility = ["//visibility:public"])
+"Defaults for rules_typescript repository not meant to be used downstream"
 
-load("//:defs.bzl", "ts_config")
-load("//internal:defaults.bzl", "ts_library")
+load("@build_bazel_rules_typescript//:defs.bzl", _ts_library = "ts_library")
 
-# Because our tsconfig.json has an extends property, we must also tell the
-# ts_library to include the extended tsconfig file in compilations.
-# The ts_library rule will generate its own tsconfig which extends from the
-# src file.
-ts_config(
-    name = "tsconfig",
-    src = "tsconfig.json",
-    deps = ["tsconfig-base.json"],
-)
+DEFAULT_TS_LIBRARY_COMPILER = "@build_bazel_rules_typescript//internal:tsc_wrapped_bin"
 
-ts_library(
-    name = "tsconfig_extends",
-    srcs = [
-        "uses_promise.ts",
-    ],
-    tsconfig = ":tsconfig",
-)
+def ts_library(compiler = DEFAULT_TS_LIBRARY_COMPILER, **kwargs):
+    _ts_library(compiler = compiler, **kwargs)

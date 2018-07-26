@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import * as path from 'path';
 import * as tsickle from 'tsickle';
 import * as ts from 'typescript';
