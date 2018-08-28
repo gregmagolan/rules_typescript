@@ -394,8 +394,18 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
       }
 
       if (!resolved) {
+        // Future compatibility with TypeScript 3.0 where return
+        // type has changed from (ts.ResolvedTypeReferenceDirective | undefined)[]
+        // to ts.ResolvedTypeReferenceDirective[]
+        const version = ts.versionMajorMinor;
+        const [major, minor] = version.split('.').map(s => Number(s));
+        if (major >= 3) {
+          resolved = {primary: false, resolvedFileName: undefined};
+        }
+
         console.error(`Failed to resolve type reference directive '${name}'`);
       }
+
       result.push(resolved);
     });
     return result;
