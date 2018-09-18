@@ -9,8 +9,8 @@
 
 ## IMPORTANT
 # If you change the `docker_image` version, also change the `cache_key` suffix
-var_1: &docker_image angular/ngcontainer:0.4.0
-var_2: &cache_key rules_typescript-{{ checksum "yarn.lock" }}-0.4.0
+var_1: &docker_image angular/ngcontainer:0.6.0
+var_2: &cache_key rules_typescript-{{ checksum "yarn.lock" }}-0.6.0
 var_3: &setup-bazel-remote-cache
   run:
     name: Start up bazel remote cache proxy
@@ -107,7 +107,11 @@ jobs:
       - run: .circleci/setup_cache.sh
       - run: sudo cp .circleci/bazel.rc /etc/bazel.bazelrc
       - *setup-bazel-remote-cache
-      - run: yarn skylint
+
+      # Run the skylark linter to check our Bazel rules
+      - run: 'find . -type f -name "*.bzl" |
+              xargs java -jar /usr/local/bin/Skylint_deploy.jar --disable-checks=deprecated-api --disable-checks=deprecated-plus-depset  --disable-checks=deprecated-rule-impl-return ||
+              (echo -e "\n.bzl files have lint errors. Please run ''yarn skylint''"; exit 1)'
 
 workflows:
   version: 2

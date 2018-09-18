@@ -91,15 +91,16 @@ def rules_typescript_dev_dependencies():
     """
     http_archive(
         name = "io_bazel",
-        urls = ["https://github.com/bazelbuild/bazel/releases/download/0.9.0/bazel-0.9.0-dist.zip"],
-        sha256 = "efb28fed4ffcfaee653e0657f6500fc4cbac61e32104f4208da385676e76312a",
+        url = "https://github.com/bazelbuild/bazel/archive/968f87900dce45a7af749a965b72dbac51b176b3.zip",
+        strip_prefix = "bazel-968f87900dce45a7af749a965b72dbac51b176b3",
+        sha256 = "e373d2ae24955c1254c495c9c421c009d88966565c35e4e8444c082cb1f0f48f",
     )
 
     http_archive(
         name = "com_github_bazelbuild_buildtools",
-        url = "https://github.com/bazelbuild/buildtools/archive/0.12.0.zip",
-        strip_prefix = "buildtools-0.12.0",
-        sha256 = "ec495cbd19238c9dc488fd65ca1fee56dcb1a8d6d56ee69a49f2ebe69826c261",
+        url = "https://github.com/bazelbuild/buildtools/archive/0.15.0.zip",
+        strip_prefix = "buildtools-0.15.0",
+        sha256 = "76d1837a86fa6ef5b4a07438f8489f00bfa1b841e5643b618e01232ba884b1fe",
     )
 
     #############################################
@@ -108,9 +109,9 @@ def rules_typescript_dev_dependencies():
 
     http_archive(
         name = "io_bazel_rules_sass",
-        urls = ["https://github.com/bazelbuild/rules_sass/archive/0.0.3.zip"],
-        strip_prefix = "rules_sass-0.0.3",
-        sha256 = "8fa98e7b48a5837c286a1ea254b5a5c592fced819ee9fe4fdd759768d97be868",
+        url = "https://github.com/bazelbuild/rules_sass/archive/1.11.0.zip",
+        strip_prefix = "rules_sass-1.11.0",
+        sha256 = "dbe9fb97d5a7833b2a733eebc78c9c1e3880f676ac8af16e58ccf2139cbcad03",
     )
 
     http_archive(
