@@ -95,10 +95,15 @@ function addFailureIfThenableCallExpression(
 
   const typeChecker = checker.typeChecker;
   const signature = typeChecker.getResolvedSignature(callExpression);
-  const returnType = typeChecker.getReturnTypeOfSignature(signature);
 
-  if (isNonFalsyThenableType(typeChecker, callExpression, returnType)) {
-    checker.addFailureAtNode(callExpression, errorMessage);
+  // Return value of getResolvedSignature is `Signature | undefined` in ts 3.1
+  // so we must check if the return value is valid to compile with ts 3.1.
+  if (signature) {
+    const returnType = typeChecker.getReturnTypeOfSignature(signature);
+
+    if (isNonFalsyThenableType(typeChecker, callExpression, returnType)) {
+      checker.addFailureAtNode(callExpression, errorMessage);
+    }
   }
 }
 
