@@ -291,7 +291,7 @@ ts_library = rule(
             compiler works out of the box. Otherwise, you'll have to override
             the compiler attribute manually.
             """,
-            default = Label(_DEFAULT_COMPILER),
+            default = Label("@build_bazel_rules_typescript//internal:tsc_wrapped_bin"),
             single_file = False,
             allow_files = True,
             executable = True,

@@ -31,8 +31,8 @@ load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary", "jasmine_node_test
 nodejs_binary(
     name = "tsc",
     data = [
-        "@npm//source-map-support",
-        "@npm//typescript",
+        "@ngdeps//source-map-support",
+        "@ngdeps//typescript",
     ],
     entry_point = "typescript/lib/tsc.js",
     visibility = ["//internal:__subpackages__"],
@@ -65,11 +65,12 @@ ts_library(
     # work with vanilla tsc.
     # Workaround for https://github.com/Microsoft/TypeScript/issues/22208
     deps = [
-        "@npm//@types/node",
-        "@npm//tsickle",
-        "@npm//tsutils",
-        "@npm//typescript",
+        "@ngdeps//@types/node",
+        "@ngdeps//tsickle",
+        "@ngdeps//tsutils",
+        "@ngdeps//typescript",
     ],
+    node_modules = "@ngdeps//typescript:typescript__typings"
 )
 
 # Other ts_library rules will use this custom compiler, which calls the
@@ -79,11 +80,11 @@ nodejs_binary(
     name = "tsc_wrapped_bin",
     data = [
         ":tsc_wrapped",
-        "@npm//protobufjs",
-        "@npm//source-map-support",
-        "@npm//tsickle",
-        "@npm//tsutils",
-        "@npm//typescript",
+        "@ngdeps//protobufjs",
+        "@ngdeps//source-map-support",
+        "@ngdeps//tsickle",
+        "@ngdeps//tsutils",
+        "@ngdeps//typescript",
     ],
     entry_point = "build_bazel_rules_typescript/internal/tsc_wrapped/tsc_wrapped.js",
     templated_args = ["--node_options=--expose-gc"],
