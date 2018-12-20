@@ -22,6 +22,7 @@ const os = require('os');
 
 const tmpdir = fs.mkdtempSync(path.join(os.tmpdir(), 'wksp'));
 const WORKSPACE_BOILERPLATE = `
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive") 
 local_repository(
     name = "build_bazel_rules_typescript",
     path = "${process.cwd()}",

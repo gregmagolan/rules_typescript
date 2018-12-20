@@ -1,6 +1,6 @@
 {
   "name": "@bazel/karma",
-  "description": "runtime dependences for web test rules",
+  "description": "runtime dependencies for web test rules",
   "homepage": "https://github.com/bazelbuild/rules_typescript",
   "license": "Apache-2.0",
   "version": "0.0.0-PLACEHOLDER",
@@ -26,7 +26,12 @@
     "semver": "5.6.0",
     "tmp": "0.0.33"
   },
-  "scripts": {
-    "postinstall": "node ./check_version.js"
+  "bazelPackages": {
+    "rules_typescript": {
+      "version": "0.0.0-PLACEHOLDER",
+      "files": [
+        "package.bzl"
+      ]
+    }
   }
 }

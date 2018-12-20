@@ -14,6 +14,8 @@
 
 workspace(name = "package_typescript_30_e2e")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive") 
+
 local_repository(
     name = "build_bazel_rules_typescript",
     path = "../../..",

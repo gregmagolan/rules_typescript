@@ -132,9 +132,9 @@ genrule(
 )
 
 genrule(
-    name = "check_version_copy",
-    srcs = ["//tools:check_version.js"],
-    outs = ["check_version.js"],
+    name = "package_bzl_copy",
+    srcs = ["//:package.bzl"],
+    outs = ["package.bzl"],
     cmd = "cp $< $@",
 )
 
@@ -145,8 +145,8 @@ npm_package(
         "package.json",
     ],
     deps = [
-        ":check_version_copy",
         ":license_copy",
+        ":package_bzl_copy",
         ":tsc_wrapped",
         ":worker_protocol_copy",
     ],

@@ -14,22 +14,36 @@
 
 workspace(name = "package_typescript_27_e2e")
 
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive") 
+
+# Using a local repository for rules_typescript since we are in the rules_typescript
+# repository
 local_repository(
     name = "build_bazel_rules_typescript",
     path = "../../..",
 )
 
+# rules_nodejs is required to load npm dependencies with yarn_install
+http_archive(
+   name = "build_bazel_rules_nodejs",
+   urls = ["https://github.com/bazelbuild/rules_nodejs/archive/c674965d65498339540ed72caeeb28f933512877.zip"],
+   strip_prefix = "rules_nodejs-c674965d65498339540ed72caeeb28f933512877",
+)
+
+# install rules_nodejs transitive dependencies with rules_typescript_dependencies
 load("@build_bazel_rules_typescript//:package.bzl", "rules_typescript_dependencies")
 
 rules_typescript_dependencies()
 
+# install rules_nodejs transitive dependencies with rules_nodejs_dependencies
 load("@build_bazel_rules_nodejs//:package.bzl", "rules_nodejs_dependencies")
 
 rules_nodejs_dependencies()
 
+# setup nodejs with node_repositories and install npm dependencies with yarn_install
 load("@build_bazel_rules_nodejs//:defs.bzl", "node_repositories", "yarn_install")
 
-node_repositories(preserve_symlinks = True)
+node_repositories()
 
 yarn_install(
     name = "npm",
@@ -37,6 +51,14 @@ yarn_install(
     yarn_lock = "//:yarn.lock",
 )
 
+# install rules_typescript bazel workspace using install_rules_typescript
+# function from npm which fetches the rules_typescript http_archive corresponding
+# to the @bazel/typescript and @bazel/karma npm packages
+load("@npm//rules_typescript:package.bzl", "install_rules_typescript")
+
+install_rules_typescript()
+
+# setup typescript toolchain
 load("@build_bazel_rules_typescript//:defs.bzl", "ts_setup_workspace")
 
 ts_setup_workspace()

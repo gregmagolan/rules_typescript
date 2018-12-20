@@ -31,7 +31,10 @@ alias(
     visibility = ["//visibility:public"],
 )
 
-exports_files(["LICENSE"])
+exports_files([
+    "LICENSE",
+    "package.bzl",
+])
 
 gazelle(
     name = "gazelle",
