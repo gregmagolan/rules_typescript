@@ -172,60 +172,76 @@ try
    * These are concatenated into a single file by karma-concat-js.
    */
   function configureFiles(conf) {
-    overrideConfigValue(conf, 'files', [
-      TMPL_bootstrap_files
-      TMPL_user_files
-    ].map(f => {
-      if (f.startsWith('NODE_MODULES/')) {
-        try {
-          // attempt to resolve in @bazel/typescript nested node_modules first
-          return require.resolve(f.replace(/^NODE_MODULES\//, '@bazel/karma/node_modules/'));
-        } catch (e) {
-          // if that failed then attempt to resolve in root node_modules
-          return require.resolve(f.replace(/^NODE_MODULES\//, ''));
-        }
-      } else {
-        return require.resolve(f);
-      }
-    }));
+    overrideConfigValue(conf, 'files', []);
     overrideConfigValue(conf, 'exclude', []);
     overrideConfigValue(conf, 'proxies', {});
 
-    // static files are added to the files array but
-    // configured to not be included so karma-concat-js does
-    // not included them in the bundle
-    [TMPL_static_files].forEach((f) => {
+    // Bootstrap files: included & served included (as script tags) and served (by the karma server)
+    [TMPL_bootstrap_files].map(file => {
+      if (file.startsWith('NODE_MODULES/')) {
+        try {
+          // attempt to resolve in @bazel/typescript nested node_modules first
+          return require.resolve(file.replace(/^NODE_MODULES\//, '@bazel/karma/node_modules/'));
+        } catch (e) {
+          // if that failed then attempt to resolve in root node_modules
+          return require.resolve(file.replace(/^NODE_MODULES\//, ''));
+        }
+      } else {
+        return require.resolve(file);
+      }
+    }).forEach(file => {
+      conf.files.push({pattern: file, included: true, served: true});
+    });
+
+    // Static files: !included & served --- not included (as script tags) and served (by the karma server)
+    [TMPL_static_files].map(file => require.resolve(file)).forEach((file) => {
       // In Windows, the runfile will probably not be symlinked. Se we need to
       // serve the real file through karma, and proxy calls to the expected file
       // location in the runfiles to the real file.
-      const resolvedFile = require.resolve(f);
-      conf.files.push({pattern: resolvedFile, included: false});
-      // Prefixing the proxy path with '/absolute' allows karma to load local
-      // files. This doesn't see to be an official API.
-      // https://github.com/karma-runner/karma/issues/2703
-      conf.proxies['/base/' + f] = '/absolute' + resolvedFile;
+      conf.files.push({pattern: file, included: false, served: true});
     });
 
+    // Require files: included & !served --- included (in karma-concat-js but NOT as script tags)
+    // and not served (by the karma server)  except for non-JS files which are treated as static files
+    [TMPL_require_files].map(file => require.resolve(file)).forEach(file => {
+      if (path.extname(file).match(/\.js/i)) {
+        conf.files.push({pattern: file, included: true, served: false});
+      } else {
+        conf.files.push({pattern: file, included: false, served: true});
+      }
+    });
+
+    // Include the require config file as the final require file
+    const requireConfigFile = tmp.fileSync(
+        {keep: false, postfix: '.js', dir: process.env['TEST_TMPDIR']});
     var requireConfigContent = `
 // A simplified version of Karma's requirejs.config.tpl.js for use with Karma under Bazel.
 // This does an explicit \`require\` on each test script in the files, otherwise nothing will be loaded.
 (function(){
+  // Runtime files are a subset of require files
   var runtimeFiles = [TMPL_runtime_files].map(function(file) { return file.replace(/\\.js$/, ''); });
-  var allFiles = [TMPL_user_files];
-  var allTestFiles = [];
-  allFiles.forEach(function (file) {
+  // Test files are a subset of require files that match the regex pattern below
+  var testFiles = [];
+  [TMPL_require_files].forEach(function (file) {
     if (/[^a-zA-Z0-9](spec|test)\\.js$/i.test(file) && !/\\/node_modules\\//.test(file)) {
-      allTestFiles.push(file.replace(/\\.js$/, ''))
+      testFiles.push(file.replace(/\\.js$/, ''))
     }
   });
-  require(runtimeFiles, function() { return require(allTestFiles, window.__karma__.start); });
+  // Require runtime files before test files
+  require(runtimeFiles, function() { return require(testFiles, window.__karma__.start); });
 })();
 `;
-
-    const requireConfigFile = tmp.fileSync(
-        {keep: false, postfix: '.js', dir: process.env['TEST_TMPDIR']});
     fs.writeFileSync(requireConfigFile.name, requireConfigContent);
-    conf.files.push(requireConfigFile.name);
+    conf.files.push({pattern: requireConfigFile.name, included: true, served: false});
+
+    // Prefixing the proxy path with '/absolute' allows karma to load local
+    // files. This doesn't see to be an official API.
+    // https://github.com/karma-runner/karma/issues/2703
+    for (const file of conf.files) {
+      if (file.served) {
+        conf.proxies['/base/' + file.pattern] = '/absolute' + file.pattern;
+      }
+    }
   }
 
   /**

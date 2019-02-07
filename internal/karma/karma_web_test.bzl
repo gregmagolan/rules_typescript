@@ -101,13 +101,13 @@ def _write_karma_config(ctx, files, amd_names_shim):
             config_file = ctx.attr.config_file.typescript.es5_sources.to_list()[0]
 
     # The files in the bootstrap attribute come before the require.js support.
-    # Note that due to frameworks = ['jasmine'], a few scripts will come before
-    # the bootstrap entries:
+    # Note that due to frameworks = ['jasmine'], karma will load a few scripts
+    # before the bootstrap entries:
     # jasmine-core/lib/jasmine-core/jasmine.js
     # karma-jasmine/lib/boot.js
     # karma-jasmine/lib/adapter.js
     # This is desired so that the bootstrap entries can patch jasmine, as zone.js does.
-    bootstrap_entries = [
+    bootstrap_files = [
         expand_path_into_runfiles(ctx, f.short_path)
         for f in ctx.files.bootstrap
     ]
@@ -122,14 +122,29 @@ def _write_karma_config(ctx, files, amd_names_shim):
     # `NODE_MODULES/` is a prefix recogized by karma.conf.js to allow
     # for a priority require of nested `@bazel/typescript/node_modules` before
     # looking in root node_modules.
-    bootstrap_entries += [
+    bootstrap_files += [
         "NODE_MODULES/requirejs/require.js",
         "NODE_MODULES/karma-requirejs/lib/adapter.js",
         "/".join([ctx.workspace_name, amd_names_shim.short_path]),
     ]
 
-    # Next we load the "runtime_deps" which we expect to contain named AMD modules
-    # Thus they should come after the require.js script, but before any srcs or deps
+    # Static files are not included as script tags but are served
+    # by the karma server
+    static_files = [
+        expand_path_into_runfiles(ctx, f.short_path)
+        for f in ctx.files.static_files
+    ]
+
+    # Requires files are named AMD modules that need to be required.
+    # Specs will be a subset of these but this list will contain
+    # more than just the spec files.
+    require_files = [
+        expand_path_into_runfiles(ctx, f.short_path)
+        for f in files.to_list()
+    ]
+
+    # Runtime files are a subset of require files that should be required before
+    # any specs are required.
     runtime_files = []
     for d in ctx.attr.runtime_deps:
         if not hasattr(d, "typescript"):
@@ -139,18 +154,6 @@ def _write_karma_config(ctx, files, amd_names_shim):
             fail("labels in runtime_deps must be created by ts_library")
         for src in d.typescript.es5_sources.to_list():
             runtime_files.append(expand_path_into_runfiles(ctx, src.short_path))
-
-    # Finally we load the user's srcs and deps
-    user_entries = [
-        expand_path_into_runfiles(ctx, f.short_path)
-        for f in files.to_list()
-    ]
-
-    # Expand static_files paths to runfiles for config
-    static_files = [
-        expand_path_into_runfiles(ctx, f.short_path)
-        for f in ctx.files.static_files
-    ]
 
     # root-relative (runfiles) path to the directory containing karma.conf
     config_segments = len(configuration.short_path.split("/"))
@@ -165,13 +168,13 @@ def _write_karma_config(ctx, files, amd_names_shim):
         output = configuration,
         template = ctx.file._conf_tmpl,
         substitutions = {
-            "TMPL_bootstrap_files": "\n".join(["      '%s'," % e for e in bootstrap_entries]),
             "TMPL_config_file": expand_path_into_runfiles(ctx, config_file.short_path) if config_file else "",
             "TMPL_env_vars": env_vars,
             "TMPL_runfiles_path": "/".join([".."] * config_segments),
-            "TMPL_runtime_files": "\n".join(["      '%s'," % e for e in runtime_files]),
+            "TMPL_bootstrap_files": "\n".join(["      '%s'," % e for e in bootstrap_files]),
             "TMPL_static_files": "\n".join(["      '%s'," % e for e in static_files]),
-            "TMPL_user_files": "\n".join(["      '%s'," % e for e in user_entries]),
+            "TMPL_require_files": "\n".join(["      '%s'," % e for e in require_files]),
+            "TMPL_runtime_files": "\n".join(["      '%s'," % e for e in runtime_files]),
         },
     )
 

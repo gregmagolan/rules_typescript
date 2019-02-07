@@ -58,6 +58,10 @@ for testDir in $(ls) ; do
         # Skip this test
         echo "Skipping test that was not specified in --test argument"
       else
+        # Delete any previous node_modules and bazel clean --expunge since we always want
+        # the freshest generated npm packages
+        rm -rf node_modules
+        $BAZEL clean --expunge
         # Some tests like ts_auto_deps depend on node_modules
         yarn install
         # Run tests
