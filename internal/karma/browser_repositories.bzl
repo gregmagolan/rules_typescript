@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Package file which defines build_bazel_rules_karma dependencies
+"""Package file which defines npm_bazel_karma dependencies
 """
 
 load("@io_bazel_rules_webtesting//web/internal:platform_http_file.bzl", "platform_http_file")

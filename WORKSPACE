@@ -94,7 +94,7 @@ load("@io_bazel_rules_webtesting//web:repositories.bzl", "web_test_repositories"
 web_test_repositories()
 
 # Setup browser repositories
-load("@build_bazel_rules_karma//:browser_repositories.bzl", "browser_repositories")
+load("@npm_bazel_karma//:browser_repositories.bzl", "browser_repositories")
 
 browser_repositories()
 
