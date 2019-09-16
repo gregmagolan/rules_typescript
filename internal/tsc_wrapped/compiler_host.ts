@@ -142,13 +142,12 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
    * For the given potentially absolute input file path (typically .ts), returns
    * the relative output path. For example, for
    * /path/to/root/blaze-out/k8-fastbuild/genfiles/my/file.ts, will return
-   * my/file.js or my/file.closure.js (depending on ES5 mode).
+   * my/file.js or my/file.mjs (depending on ES5 mode).
    */
   relativeOutputPath(fileName: string) {
     let result = this.rootDirsRelative(fileName);
     result = result.replace(/(\.d)?\.[jt]sx?$/, '');
-    if (!this.bazelOpts.es5Mode) result += '.closure';
-    return result + '.js';
+    return result + (this.bazelOpts.es5Mode ? '.js' : '.mjs');
   }
 
   /**
@@ -506,14 +505,8 @@ export class CompilerHost implements ts.CompilerHost, tsickle.TsickleHost {
             path.join(this.bazelOpts.transpiledJsOutputDirectory!, fileName);
       }
     } else if (!this.bazelOpts.es5Mode) {
-      // Write ES6 transpiled files to *.closure.js.
-      if (this.bazelOpts.locale) {
-        // i18n paths are required to end with __locale.js so we put
-        // the .closure segment before the __locale
-        fileName = fileName.replace(/(__[^\.]+)?\.js$/, '.closure$1.js');
-      } else {
-        fileName = fileName.replace(/\.js$/, '.closure.js');
-      }
+      // Write ES6 transpiled files to *.mjs.
+      fileName = fileName.replace(/\.js$/, '.mjs');
     }
 
     // Prepend the output directory.
